@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, Mapping, Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from wespeaker.models.resnet import BasicBlock
 
 
 AGE_MEAN = 35.0
@@ -62,32 +63,6 @@ def _statistics(x: torch.Tensor) -> torch.Tensor:
     mean = x.mean(dim=2)
     variance = x.var(dim=2, unbiased=False)
     return torch.cat([mean, torch.sqrt(variance + 1.0e-12)], dim=1)
-
-
-class BasicBlock(nn.Module):
-    def __init__(self, in_channels: int, channels: int, stride: int = 1):
-        super().__init__()
-        self.conv1 = nn.Conv2d(
-            in_channels, channels, kernel_size=3, stride=stride,
-            padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(channels)
-        self.conv2 = nn.Conv2d(
-            channels, channels, kernel_size=3, stride=1,
-            padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(channels)
-        if stride != 1 or in_channels != channels:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(in_channels, channels, kernel_size=1,
-                          stride=stride, bias=False),
-                nn.BatchNorm2d(channels),
-            )
-        else:
-            self.shortcut = nn.Identity()
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        out = F.relu(self.bn1(self.conv1(x)), inplace=True)
-        out = self.bn2(self.conv2(out))
-        return F.relu(out + self.shortcut(x), inplace=True)
 
 
 def _make_layer(in_channels: int, channels: int, blocks: int,
