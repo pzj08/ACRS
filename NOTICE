@@ -1,0 +1,6 @@
+ACRS
+Copyright 2026 pzj
+
+The acoustic ResNet conventions and basic residual block are adapted from
+WeSpeaker (https://github.com/wenet-e2e/wespeaker), which is distributed under
+the Apache License, Version 2.0.
