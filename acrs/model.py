@@ -1,15 +1,3 @@
-# Copyright (c) 2026 pzj
-# Portions of the acoustic ResNet block are adapted from WeSpeaker,
-# Copyright (c) its contributors.
-# Licensed under the Apache License, Version 2.0
-
-"""ACRS: Age-Conditioned Residual Suppression.
-
-This module contains a self-contained PyTorch implementation of the ACRS
-ResNet34 speaker encoder. It follows WeSpeaker's acoustic ResNet conventions:
-the input is a batch of frame-level features shaped ``[batch, time, feature]``.
-"""
-
 from __future__ import annotations
 
 import math
@@ -25,7 +13,6 @@ AGE_STD = 15.0
 
 
 def _merged_config(config: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
-    """Validate and complete the public ACRS configuration."""
     result: Dict[str, Any] = {
         "age_bins": [18, 25, 35, 45, 55, 65],
         "ignore_age_index": -1,
@@ -71,7 +58,6 @@ def _merged_config(config: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
 
 
 def _statistics(x: torch.Tensor) -> torch.Tensor:
-    """Concatenate mean and standard deviation over frequency and time."""
     x = x.flatten(2)
     mean = x.mean(dim=2)
     variance = x.var(dim=2, unbiased=False)
@@ -79,8 +65,6 @@ def _statistics(x: torch.Tensor) -> torch.Tensor:
 
 
 class BasicBlock(nn.Module):
-    """The basic residual block used by the WeSpeaker ResNet34 encoder."""
-
     def __init__(self, in_channels: int, channels: int, stride: int = 1):
         super().__init__()
         self.conv1 = nn.Conv2d(
@@ -114,8 +98,6 @@ def _make_layer(in_channels: int, channels: int, blocks: int,
 
 
 class AgeConditionedResidualBlock(nn.Module):
-    """Suppress an identity residual with a gate inferred from age features."""
-
     def __init__(self, channels: int, *, gate_init: str = "default",
                  disabled: bool = False):
         super().__init__()
@@ -146,8 +128,6 @@ class AgeConditionedResidualBlock(nn.Module):
 
 
 class AgeConditionedFusionGate(nn.Module):
-    """Fuse the age stream into the identity stream through a bounded gate."""
-
     def __init__(self, channels: int, low_rank: int = 32,
                  disabled: bool = False):
         super().__init__()
@@ -166,8 +146,6 @@ class AgeConditionedFusionGate(nn.Module):
 
 
 class AttentiveSpatiotemporalStatisticsPooling(nn.Module):
-    """Attentive mean/std pooling over the joint time-frequency domain."""
-
     def __init__(self, channels: int, embedding_dim: int,
                  eps: float = 1.0e-12):
         super().__init__()
@@ -196,8 +174,6 @@ class AttentiveSpatiotemporalStatisticsPooling(nn.Module):
 
 
 class AgeHead(nn.Module):
-    """Predict normalized continuous age and a coarse age posterior."""
-
     def __init__(self, channels: int, posterior_bins: int):
         super().__init__()
         self.shared = nn.Sequential(
@@ -213,8 +189,6 @@ class AgeHead(nn.Module):
 
 
 class ACRS(nn.Module):
-    """Age-Conditioned Residual Suppression with a ResNet34 trunk."""
-
     def __init__(self, feat_dim: int = 80, embed_dim: int = 256,
                  acrs_args: Optional[Mapping[str, Any]] = None,
                  **_: Any):
@@ -381,12 +355,6 @@ class ACRS(nn.Module):
         speaker_classifier: Optional[Callable[..., torch.Tensor]] = None,
         epoch: Optional[float] = None,
     ) -> Dict[str, torch.Tensor]:
-        """Compute ACRS auxiliary losses.
-
-        The primary speaker-classification loss remains the responsibility of
-        the training recipe. When counterfactual consistency is enabled, pass
-        the same ArcFace classifier used for the primary speaker objective.
-        """
         device = age_groups.device
         zero = torch.zeros((), device=device)
         valid = age_groups != self.ignore_age_index
@@ -486,7 +454,6 @@ def ACRS_ResNet34(
     acrs_args: Optional[Mapping[str, Any]] = None,
     **kwargs: Any,
 ) -> ACRS:
-    """Factory compatible with WeSpeaker's model construction convention."""
     del pooling_func, two_emb_layer
     return ACRS(feat_dim=feat_dim, embed_dim=embed_dim,
                 acrs_args=acrs_args, **kwargs)
