@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 from typing import Any, Callable, Dict, Mapping, Optional, Tuple
 
 import torch
@@ -26,13 +25,11 @@ def _merged_config(config: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
             "training_counterfactual": False,
             "consistency_schedule": None,
         },
-        "ablation": {"mode": "none"},
     }
     config = dict(config or {})
     result.update({k: v for k, v in config.items()
-                   if k not in ("losses", "ablation")})
+                   if k != "losses"})
     result["losses"].update(dict(config.get("losses", {})))
-    result["ablation"].update(dict(config.get("ablation", {})))
 
     bins = [float(value) for value in result["age_bins"]]
     if not bins or bins != sorted(bins) or len(set(bins)) != len(bins):
@@ -43,18 +40,6 @@ def _merged_config(config: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
     if int(result["num_posterior_bins"]) < 2:
         raise ValueError("num_posterior_bins must be at least 2")
 
-    mode = str(result["ablation"]["mode"])
-    valid_modes = {
-        "none",
-        "no_age_conditioning",
-        "no_residual_suppression",
-        "no_fusion_gate",
-        "random_gate_init",
-    }
-    if mode not in valid_modes:
-        raise ValueError(
-            f"unknown ablation mode {mode!r}; expected one of "
-            f"{sorted(valid_modes)}")
     return result
 
 
@@ -73,10 +58,8 @@ def _make_layer(in_channels: int, channels: int, blocks: int,
 
 
 class AgeConditionedResidualBlock(nn.Module):
-    def __init__(self, channels: int, *, gate_init: str = "default",
-                 disabled: bool = False):
+    def __init__(self, channels: int):
         super().__init__()
-        self.disabled = disabled
         self.residual = nn.Conv2d(channels, channels, kernel_size=1)
         self.age_projection = nn.Sequential(
             nn.Linear(2 * channels, channels),
@@ -84,17 +67,10 @@ class AgeConditionedResidualBlock(nn.Module):
             nn.Linear(channels, channels),
         )
         self.gate = nn.Linear(channels, channels)
-        if gate_init == "random":
-            nn.init.kaiming_normal_(self.gate.weight, a=math.sqrt(5))
-            nn.init.zeros_(self.gate.bias)
-        else:
-            nn.init.constant_(self.gate.bias, -2.0)
+        nn.init.constant_(self.gate.bias, -2.0)
 
     def forward(self, identity: torch.Tensor,
                 age: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        if self.disabled:
-            gate = identity.new_zeros((identity.shape[0], identity.shape[1]))
-            return identity, gate
         age_code = self.age_projection(_statistics(age))
         gate = torch.sigmoid(self.gate(age_code))
         residual = self.residual(identity)
@@ -103,18 +79,14 @@ class AgeConditionedResidualBlock(nn.Module):
 
 
 class AgeConditionedFusionGate(nn.Module):
-    def __init__(self, channels: int, low_rank: int = 32,
-                 disabled: bool = False):
+    def __init__(self, channels: int, low_rank: int = 32):
         super().__init__()
-        self.disabled = disabled
         self.age_projection = nn.Conv2d(
             channels, low_rank, kernel_size=1, bias=False)
         self.gate = nn.Conv2d(channels + low_rank, channels, kernel_size=1)
 
     def forward(self, identity: torch.Tensor,
                 age: torch.Tensor) -> torch.Tensor:
-        if self.disabled:
-            return identity
         age = self.age_projection(age)
         gate = torch.sigmoid(self.gate(torch.cat([identity, age], dim=1)))
         return identity * gate
@@ -197,21 +169,11 @@ class ACRS(nn.Module):
         self.age_layer4 = _make_layer(128, 256, 3, 2)
         self.age_head = AgeHead(256, int(self.config["num_posterior_bins"]))
 
-        mode = self.config["ablation"]["mode"]
-        residual_disabled = mode in {
-            "no_age_conditioning", "no_residual_suppression"}
-        fusion_disabled = mode in {
-            "no_age_conditioning", "no_fusion_gate"}
-        gate_init = "random" if mode == "random_gate_init" else "default"
-
         self.identity_layer3 = _make_layer(64, 128, 6, 2)
-        self.residual3 = AgeConditionedResidualBlock(
-            128, gate_init=gate_init, disabled=residual_disabled)
+        self.residual3 = AgeConditionedResidualBlock(128)
         self.identity_layer4 = _make_layer(128, 256, 3, 2)
-        self.residual4 = AgeConditionedResidualBlock(
-            256, gate_init=gate_init, disabled=residual_disabled)
-        self.fusion = AgeConditionedFusionGate(
-            256, disabled=fusion_disabled)
+        self.residual4 = AgeConditionedResidualBlock(256)
+        self.fusion = AgeConditionedFusionGate(256)
         self.pooling = AttentiveSpatiotemporalStatisticsPooling(
             256, embed_dim)
         self.embedding_age_readout = nn.Sequential(
