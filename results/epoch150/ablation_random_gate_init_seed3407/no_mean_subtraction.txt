@@ -1,0 +1,33 @@
+---- vox1_O_cleaned.kaldi.score -----
+EER = 1.143
+minDCF (p_target:0.01 c_miss:1 c_fa:1) = 0.136
+---- vox1_E_cleaned.kaldi.score -----
+EER = 1.259
+minDCF (p_target:0.01 c_miss:1 c_fa:1) = 0.144
+---- vox1_H_cleaned.kaldi.score -----
+EER = 2.291
+minDCF (p_target:0.01 c_miss:1 c_fa:1) = 0.231
+---- only_ca5.kaldi.score -----
+EER = 2.175
+minDCF (p_target:0.01 c_miss:1 c_fa:1) = 0.203
+---- only_ca10.kaldi.score -----
+EER = 3.618
+minDCF (p_target:0.01 c_miss:1 c_fa:1) = 0.289
+---- only_ca15.kaldi.score -----
+EER = 6.177
+minDCF (p_target:0.01 c_miss:1 c_fa:1) = 0.385
+---- only_ca20.kaldi.score -----
+EER = 8.987
+minDCF (p_target:0.01 c_miss:1 c_fa:1) = 0.465
+---- vox_ca5.kaldi.score -----
+EER = 3.920
+minDCF (p_target:0.01 c_miss:1 c_fa:1) = 0.336
+---- vox_ca10.kaldi.score -----
+EER = 5.480
+minDCF (p_target:0.01 c_miss:1 c_fa:1) = 0.411
+---- vox_ca15.kaldi.score -----
+EER = 8.654
+minDCF (p_target:0.01 c_miss:1 c_fa:1) = 0.529
+---- vox_ca20.kaldi.score -----
+EER = 11.489
+minDCF (p_target:0.01 c_miss:1 c_fa:1) = 0.687

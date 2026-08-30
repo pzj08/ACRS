@@ -1,0 +1,9 @@
+run,seed,epoch,ablation,score_variant,file
+acrs,3409,150,none,mean_subtracted,acrs_seed3409/mean_subtracted.txt
+acrs,3409,150,none,no_mean_subtraction,acrs_seed3409/no_mean_subtraction.txt
+acrs,3407,150,no_age_loss,mean_subtracted,ablation_no_age_loss_seed3407/mean_subtracted.txt
+acrs,3407,150,no_age_loss,no_mean_subtraction,ablation_no_age_loss_seed3407/no_mean_subtraction.txt
+acrs,3407,150,no_age_conditioning,mean_subtracted,ablation_no_age_conditioning_seed3407/mean_subtracted.txt
+acrs,3407,150,no_age_conditioning,no_mean_subtraction,ablation_no_age_conditioning_seed3407/no_mean_subtraction.txt
+acrs,3407,150,random_gate_init,mean_subtracted,ablation_random_gate_init_seed3407/mean_subtracted.txt
+acrs,3407,150,random_gate_init,no_mean_subtraction,ablation_random_gate_init_seed3407/no_mean_subtraction.txt
