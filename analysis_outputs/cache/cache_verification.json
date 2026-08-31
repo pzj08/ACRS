@@ -1,0 +1,8 @@
+{
+  "expected_utterances": 151977,
+  "compared_with_existing_embeddings": 151977,
+  "max_absolute_difference": 0.0,
+  "mean_absolute_difference": 0.0,
+  "minimum_cosine_similarity": 1.0,
+  "checkpoint_sha256": "ca2314bedd9cdd7bf27acbcc6cbad7db4a632430851074002aebfbee066f5be4"
+}

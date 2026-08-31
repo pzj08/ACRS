@@ -1,0 +1,16 @@
+{
+  "targets": 151977,
+  "near_donors_different_speaker": true,
+  "far_donors_different_speaker": true,
+  "near_age_difference_mean_years": 0.0017437696502786897,
+  "near_age_difference_median_years": 0.0005514676755389303,
+  "near_age_difference_p95_years": 0.005227914035820902,
+  "near_age_difference_max_years": 1.4466043233099697,
+  "far_age_difference_mean_years": 46.13225779390275,
+  "far_gap_strictly_greater_than_near_for_all_targets": true,
+  "far_eer_worse_than_near_datasets": 8,
+  "far_minDCF_worse_than_near_datasets": 8,
+  "datasets": 8,
+  "correct_score_rows_compared": 1316888,
+  "correct_score_different_lines": 0
+}

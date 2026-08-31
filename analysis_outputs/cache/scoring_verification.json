@@ -1,0 +1,8 @@
+{
+  "protocol": "mean_subtracted_cosine",
+  "datasets": 8,
+  "correct_score_rows_compared": 1316888,
+  "maximum_score_difference": 0.0,
+  "different_lines": 0,
+  "reference": "/work1/pzj/casv_aqds_r021_eval_seed3409_ep150/scores"
+}

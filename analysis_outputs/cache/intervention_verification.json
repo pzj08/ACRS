@@ -1,0 +1,48 @@
+{
+  "utterances": 151977,
+  "self_intervention_max_absolute_difference": 0.0,
+  "self_intervention_mean_absolute_difference": 0.0,
+  "self_intervention_minimum_cosine_similarity": 0.9999999403953552,
+  "repeat_intervention_max_absolute_difference": 0.0,
+  "repeat_intervention_mean_absolute_difference": 0.0,
+  "correct_vs_existing_max_absolute_difference": 0.0,
+  "correct_vs_existing_mean_absolute_difference": 0.0,
+  "embedding_norms": {
+    "Correct": {
+      "mean": 1.0,
+      "std": 4.11612219863855e-08,
+      "min": 0.9999998211860657,
+      "max": 1.0000001192092896
+    },
+    "Near-Age": {
+      "mean": 1.0,
+      "std": 4.137986309160624e-08,
+      "min": 0.9999998211860657,
+      "max": 1.0000001192092896
+    },
+    "Shuffle-S3": {
+      "mean": 1.0,
+      "std": 4.095625882882814e-08,
+      "min": 0.9999998211860657,
+      "max": 1.0000001192092896
+    },
+    "Shuffle-S4": {
+      "mean": 1.0,
+      "std": 4.136884612648828e-08,
+      "min": 0.9999998211860657,
+      "max": 1.0000001192092896
+    },
+    "Shuffle-Both": {
+      "mean": 1.0,
+      "std": 4.1453240839928185e-08,
+      "min": 0.9999998211860657,
+      "max": 1.0000001192092896
+    },
+    "Far-Age": {
+      "mean": 1.0,
+      "std": 4.08642613081156e-08,
+      "min": 0.9999998211860657,
+      "max": 1.0000001192092896
+    }
+  }
+}
