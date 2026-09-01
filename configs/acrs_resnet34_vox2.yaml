@@ -1,0 +1,119 @@
+exp_dir: exp/acrs_resnet34_vox2
+checkpoint: null
+model_init: null
+model_init_strict: false
+seed: 3409
+num_epochs: 150
+save_epoch_interval: 1
+enable_amp: false
+gpus:
+  - 0
+  - 1
+  - 2
+  - 3
+
+data_type: shard
+train_data: data/vox2_train_voxca/shard.list
+train_label: data/vox2_train_voxca/utt2spk
+key_filter_file: data/vox2_train_voxca/key.list
+reverb_data: data/augmentation/rirs_lmdb
+noise_data: data/augmentation/musan_lmdb
+
+dataset_args:
+  resample_rate: 16000
+  num_frms: 200
+  filter: true
+  filter_args:
+    min_num_frames: 100
+    max_num_frames: 800
+  shuffle: true
+  shuffle_args:
+    shuffle_size: 2500
+  fbank_args:
+    num_mel_bins: 80
+    frame_length: 25
+    frame_shift: 10
+    dither: 1.0
+  aug_prob: 0.6
+  speed_perturb: true
+  spec_aug: false
+  spec_aug_args:
+    prob: 0.6
+    num_t_mask: 1
+    num_f_mask: 1
+    max_t: 10
+    max_f: 8
+  sample_num_per_epoch: 0
+
+dataloader_args:
+  batch_size: 64
+  num_workers: 8
+  pin_memory: false
+  prefetch_factor: 8
+  drop_last: true
+
+model: ACRS_ResNet34
+model_args:
+  feat_dim: 80
+  embed_dim: 256
+  pooling_func: ACRS
+  two_emb_layer: false
+  acrs_args:
+    age_label_file: data/vox2_train_voxca/segment2age.npy
+    age_label_type: value
+    age_bins:
+      - 21
+      - 31
+      - 41
+      - 51
+      - 61
+      - 71
+    num_age_groups: 7
+    num_posterior_bins: 4
+    ignore_age_index: -1
+    losses:
+      lambda_age: 0.05
+      lambda_consistency: 0.02
+      lambda_path: 0.0
+      lambda_smooth: 0.0001
+      ramp_epoch: 2
+      training_counterfactual: false
+      consistency_schedule: null
+
+projection_args:
+  project_type: arc_margin
+  scale: 32.0
+  easy_margin: false
+  do_lm: false
+  embed_dim: 256
+
+do_lm: false
+
+loss: CrossEntropyLoss
+loss_args: {}
+
+margin_scheduler: MarginScheduler
+margin_update:
+  initial_margin: 0.2
+  final_margin: 0.2
+  increase_start_epoch: 1
+  fix_start_epoch: 1
+  increase_type: exp
+  update_margin: false
+
+optimizer: SGD
+optimizer_args:
+  lr: 0.0167
+  momentum: 0.9
+  nesterov: true
+  weight_decay: 0.0001
+
+scheduler: ExponentialDecrease
+scheduler_args:
+  initial_lr: 0.0167
+  final_lr: 0.00005
+  warm_up_epoch: 6
+  warm_from_zero: true
+
+num_avg: 10
+log_batch_interval: 100
