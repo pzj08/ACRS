@@ -3,8 +3,8 @@
 All analyses use the complete ACRS epoch-150 checkpoint `model_150.pt`
 (SHA-256 `ca2314bedd9cdd7bf27acbcc6cbad7db4a632430851074002aebfbee066f5be4`).
 No model was retrained. Evaluation uses the repository's full-utterance Vox1
-shards, the original feature/CMVN path, Vox2-train mean subtraction, cosine
-scoring, and WeSpeaker EER/minDCF (`p_target=0.01`). The diagnostic embeddings
+shards, the original feature/CMVN path, cosine scoring without mean subtraction,
+and WeSpeaker EER/minDCF (`p_target=0.01`). The diagnostic embeddings
 match the archived full-system embeddings exactly for all 151,977 utterances.
 The eight Correct score files also match all 1,316,888 archived score lines
 exactly.
@@ -29,30 +29,33 @@ existing system results remain in `existing_results_summary.csv`.
 
 # 2. Existing Ablation Findings
 
-The primary comparison uses one uniform mean-subtracted protocol. EER (%) on
-the controlled Only-CA conditions is:
+The primary comparison uses one uniform protocol without mean subtraction.
+EER (%) on the controlled Only-CA conditions is:
 
 | System | CA5 | CA10 | CA15 | CA20 |
 |---|---:|---:|---:|---:|
-| Full ACRS | 1.848 | 3.053 | 4.990 | 7.222 |
-| no_age_loss | 1.885 | 3.283 | 5.606 | 8.255 |
-| no_age_conditioning | 2.007 | 3.412 | 5.540 | 7.693 |
-| random_gate_init | 2.162 | 3.623 | 6.131 | 8.867 |
+| ResNet34 baseline | 2.061 | 3.306 | 5.159 | 7.232 |
+| Full ACRS | 1.869 | 2.982 | 4.789 | 7.071 |
+| no_age_loss | 1.893 | 3.284 | 5.554 | 7.974 |
+| no_age_conditioning | 2.012 | 3.354 | 5.370 | 7.382 |
+| random_gate_init | 2.175 | 3.618 | 6.177 | 8.987 |
 
+Full ACRS improves over the controlled ResNet34 baseline on all four Only-CA
+sets by 0.161--0.370 EER points and on Vox-CA by 0.429--1.366 points.
 `no_age_loss` asks whether explicit age supervision is useful specifically as
 age mismatch grows. Its absolute deficit relative to Full increases
-monotonically from 0.037 EER points at CA5 to 0.230, 0.616, and 1.033 points at
-CA10/15/20; relative reductions are 2.0%, 7.0%, 11.0%, and 12.5%. Vox-CA shows
-the same monotonic absolute trend (0.145 to 0.900 points). This supports a
+monotonically from 0.024 EER points at CA5 to 0.302, 0.765, and 0.903 points at
+CA10/15/20; relative reductions are 1.3%, 9.2%, 13.8%, and 11.3%. Vox-CA shows
+the same monotonic absolute trend (0.147 to 1.186 points). This supports a
 cross-age-specific benefit from age supervision rather than a uniform gain.
 
 `no_age_conditioning` asks whether conditioning the suppression path is
-necessary. Full is better on every CA set, by 0.159–0.550 points on Only-CA and
-0.226–0.886 points on Vox-CA. The gap is not monotonic through CA20, but its
+necessary. Full is better on every CA set, by 0.143–0.581 points on Only-CA and
+0.217–0.828 points on Vox-CA. The gap is not monotonic through CA20, but its
 consistent direction supports the conditioning design. `random_gate_init` is
 uniformly weaker and is best treated as an optimization/design diagnostic, not
-as the main scientific comparison. The no-mean-subtraction protocol preserves
-these qualitative CA orderings; no dataset-specific protocol was selected.
+as the main scientific comparison. No dataset-specific scoring protocol was
+selected.
 
 # 3. Gate Specialization
 
@@ -106,23 +109,23 @@ Stage 4.
 
 # 6. Counterfactual Age Intervention
 
-EER (%) under the original mean-subtracted protocol is:
+EER (%) under cosine scoring without mean subtraction is:
 
 | Dataset | Correct | Shuffle-S3 | Shuffle-S4 | Shuffle-Both | Far-Age |
 |---|---:|---:|---:|---:|---:|
-| Only-CA5 | 1.848 | 3.671 | 2.815 | 6.408 | 9.211 |
-| Only-CA10 | 3.053 | 4.686 | 4.406 | 7.915 | 14.327 |
-| Only-CA15 | 4.990 | 6.744 | 6.092 | 9.963 | 17.506 |
-| Only-CA20 | 7.222 | 8.997 | 7.884 | 11.615 | 18.084 |
-| Vox-CA5 | 3.353 | 6.784 | 4.991 | 10.714 | 16.562 |
-| Vox-CA10 | 4.686 | 7.661 | 6.655 | 12.088 | 22.220 |
-| Vox-CA15 | 7.285 | 10.105 | 9.149 | 14.470 | 25.941 |
-| Vox-CA20 | 9.858 | 11.955 | 10.822 | 15.968 | 25.138 |
+| Only-CA5 | 1.869 | 3.683 | 2.909 | 6.429 | 9.005 |
+| Only-CA10 | 2.982 | 4.700 | 4.483 | 7.910 | 14.063 |
+| Only-CA15 | 4.789 | 6.684 | 6.187 | 9.843 | 17.362 |
+| Only-CA20 | 7.071 | 8.726 | 7.904 | 11.545 | 17.703 |
+| Vox-CA5 | 3.359 | 6.718 | 5.128 | 10.644 | 16.195 |
+| Vox-CA10 | 4.676 | 7.659 | 6.822 | 12.100 | 21.882 |
+| Vox-CA15 | 7.211 | 10.094 | 9.350 | 14.404 | 25.875 |
+| Vox-CA20 | 9.604 | 12.071 | 11.012 | 16.095 | 25.042 |
 
 Incorrect conditioning degrades EER on every dataset and every intervention.
-Across Only-CA, Shuffle-S3 adds 1.63–1.82 points, Shuffle-S4 adds 0.66–1.35,
-Shuffle-Both adds 4.39–4.97, and Far-Age adds 7.36–12.52. Across Vox-CA, the
-corresponding ranges are 2.10–3.43, 0.96–1.97, 6.11–7.40, and 13.21–18.66.
+Across Only-CA, Shuffle-S3 adds 1.65–1.89 points, Shuffle-S4 adds 0.83–1.50,
+Shuffle-Both adds 4.47–5.05, and Far-Age adds 7.14–12.57. Across Vox-CA, the
+corresponding ranges are 2.47–3.36, 1.41–2.15, 6.49–7.42, and 12.84–18.66.
 All intervention minDCFs are also worse than Correct. Far-Age has the highest
 EER in every case, although its minDCF is not always above Shuffle-Both.
 
@@ -141,14 +144,14 @@ are identical. The comparison is:
 
 | Dataset | Correct EER/minDCF | Near-Age EER/minDCF | Far-Age EER/minDCF | Near→Far ΔEER | Near→Far ΔminDCF |
 |---|---:|---:|---:|---:|---:|
-| Only-CA5 | 1.848 / 0.164 | 4.760 / 0.445 | 9.211 / 0.490 | +4.451 | +0.045 |
-| Only-CA10 | 3.053 / 0.249 | 6.950 / 0.520 | 14.327 / 0.792 | +7.377 | +0.271 |
-| Only-CA15 | 4.990 / 0.327 | 10.033 / 0.634 | 17.506 / 0.932 | +7.473 | +0.298 |
-| Only-CA20 | 7.222 / 0.421 | 13.079 / 0.762 | 18.084 / 0.995 | +5.005 | +0.232 |
-| Vox-CA5 | 3.353 / 0.291 | 8.058 / 0.602 | 16.562 / 0.647 | +8.504 | +0.045 |
-| Vox-CA10 | 4.686 / 0.355 | 10.222 / 0.638 | 22.220 / 0.824 | +11.999 | +0.186 |
-| Vox-CA15 | 7.285 / 0.466 | 13.866 / 0.761 | 25.941 / 0.954 | +12.075 | +0.193 |
-| Vox-CA20 | 9.858 / 0.596 | 17.207 / 0.898 | 25.138 / 0.995 | +7.931 | +0.097 |
+| Only-CA5 | 1.869 / 0.167 | 4.816 / 0.454 | 9.005 / 0.480 | +4.190 | +0.026 |
+| Only-CA10 | 2.982 / 0.255 | 7.023 / 0.526 | 14.063 / 0.787 | +7.040 | +0.261 |
+| Only-CA15 | 4.789 / 0.331 | 10.287 / 0.643 | 17.362 / 0.927 | +7.075 | +0.284 |
+| Only-CA20 | 7.071 / 0.410 | 13.200 / 0.754 | 17.703 / 0.995 | +4.504 | +0.241 |
+| Vox-CA5 | 3.359 / 0.286 | 8.157 / 0.604 | 16.195 / 0.636 | +8.038 | +0.032 |
+| Vox-CA10 | 4.676 / 0.349 | 10.244 / 0.641 | 21.882 / 0.821 | +11.638 | +0.180 |
+| Vox-CA15 | 7.211 / 0.470 | 14.049 / 0.780 | 25.875 / 0.956 | +11.826 | +0.177 |
+| Vox-CA20 | 9.604 / 0.601 | 17.683 / 0.891 | 25.042 / 0.995 | +7.359 | +0.105 |
 
 Far-Age is consistently worse than Near-Age: 8/8 sets by EER and 8/8 by
 minDCF. This directly supports an age-distance effect in the residual
@@ -161,7 +164,7 @@ CA5/10/15/20, so the result supports consistent near/far ordering rather than
 a linear severity law.
 
 Sanity checks passed. Self-intervention and repeated fixed-donor inference have
-zero max/mean absolute difference; minimum self cosine is 0.99999994. All five
+zero max/mean absolute difference; minimum self cosine is 0.99999982. All six
 embedding-norm means equal 1.0, with the same numerical range
 (0.99999982–1.00000012). The changes are therefore not a norm collapse.
 
@@ -205,7 +208,7 @@ stage responds monotonically to age gap or that age is globally erased.
 # 9. Strongest Finding
 
 **The strongest experimental finding is: Far-Age is worse than Near-Age on all
-eight sets by EER and minDCF, adding 4.45–12.08 EER points with target identity
+eight sets by EER and minDCF, adding 4.19–11.83 EER points with target identity
 and scoring unchanged.**
 
 # 10. Second Strongest Finding
@@ -257,7 +260,7 @@ Table 2 should contain two compact panels using EER only: (a) Full,
 `no_age_loss`, and `no_age_conditioning` on Only-CA5/10/15/20; (b) Correct,
 Near-Age, Shuffle-S3, Shuffle-S4, Shuffle-Both, and Far-Age on the same sets.
 Put minDCF,
-Vox-CA intervention rows, no-mean results, `random_gate_init`, cosine-distance
+Vox-CA intervention rows, `random_gate_init`, cosine-distance
 robustness, full suppression tables, donor mappings, and sanity details on
 GitHub. The full per-pair CSV and age-prediction calibration are useful audit
 artifacts but do not merit four-page body space.

@@ -19,7 +19,7 @@ Stage-3/4 residual gates with different-speaker donors. Even the
 nearest-age donor degrades every benchmark, indicating that matching scalar
 age does not reproduce the target-specific condition. More importantly,
 Far-Age is worse than Near-Age on all eight sets by both EER and minDCF.
-Moving from Near to Far adds 4.45–7.47 EER points on Only-CA and 7.93–12.08
+Moving from Near to Far adds 4.19–7.07 EER points on Only-CA and 7.36–11.83
 points on Vox-CA. This consistent ordering supports an age-distance effect in
 the learned residual condition, although the degradation magnitude is not
 monotonic from CA5 to CA20. These results support the functional role of
@@ -28,15 +28,14 @@ correct, target-specific age conditioning.
 # C. Ablation paragraph
 
 Explicit age supervision becomes more useful as the controlled age mismatch
-increases. On Only-CA5/10/15/20, Full ACRS obtains 1.848%, 3.053%, 4.990%, and
-7.222% EER, compared with 1.885%, 3.283%, 5.606%, and 8.255% without the age
-loss. The absolute reduction therefore grows monotonically from 0.037 to
-1.033 EER points; Vox-CA shows the same trend. Removing age conditioning also
-degrades every cross-age result, yielding 2.007%, 3.412%, 5.540%, and 7.693%
-on the four Only-CA sets. Together, these ablations suggest that explicit age
-supervision supplies a useful conditioning representation and that using this
-representation in the suppression path is necessary for the observed
-cross-age gains.
+increases. On Only-CA5/10/15/20, Full ACRS obtains 1.869%, 2.982%, 4.789%, and
+7.071% EER, compared with 1.893%, 3.284%, 5.554%, and 7.974% without the age
+loss. The absolute reduction grows from 0.024 to 0.903 EER points; Vox-CA shows
+the same trend. Removing age conditioning also degrades every cross-age
+result, yielding 2.012%, 3.354%, 5.370%, and 7.382% on the four Only-CA sets.
+Together, these ablations suggest that explicit age supervision supplies a
+useful conditioning representation and that using this representation in the
+suppression path is necessary for the observed cross-age gains.
 
 # D. Three candidate key findings
 
@@ -64,4 +63,4 @@ conditioning interventions.** Removing age supervision or age-conditioned
 suppression tests whether each learned component is necessary; replacing the
 target residual gates with nearest- and farthest-age donors tests whether both
 target specificity and donor age distance matter at inference. EER (%) is
-reported under a single mean-subtracted cosine protocol; lower is better.
+reported under cosine scoring without mean subtraction; lower is better.

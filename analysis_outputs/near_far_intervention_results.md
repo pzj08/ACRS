@@ -1,19 +1,16 @@
 # Near-Age versus Far-Age intervention
 
-All values use the existing mean-subtracted cosine protocol. EER is reported in percent.
+All values use cosine scoring without mean subtraction. EER is reported in percent.
 
 | Dataset | Correct EER/minDCF | Near-Age EER/minDCF | Far-Age EER/minDCF | Near→Far ΔEER | Near→Far ΔminDCF |
 |---|---:|---:|---:|---:|---:|
-| only_ca5 | 1.848 / 0.164 | 4.760 / 0.445 | 9.211 / 0.490 | +4.451 | +0.045 |
-| only_ca10 | 3.053 / 0.249 | 6.950 / 0.520 | 14.327 / 0.792 | +7.377 | +0.271 |
-| only_ca15 | 4.990 / 0.327 | 10.033 / 0.634 | 17.506 / 0.932 | +7.473 | +0.298 |
-| only_ca20 | 7.222 / 0.421 | 13.079 / 0.762 | 18.084 / 0.995 | +5.005 | +0.232 |
-| vox_ca5 | 3.353 / 0.291 | 8.058 / 0.602 | 16.562 / 0.647 | +8.504 | +0.045 |
-| vox_ca10 | 4.686 / 0.355 | 10.222 / 0.638 | 22.220 / 0.824 | +11.999 | +0.186 |
-| vox_ca15 | 7.285 / 0.466 | 13.866 / 0.761 | 25.941 / 0.954 | +12.075 | +0.193 |
-| vox_ca20 | 9.858 / 0.596 | 17.207 / 0.898 | 25.138 / 0.995 | +7.931 | +0.097 |
+| only_ca5 | 1.869 / 0.167 | 4.816 / 0.454 | 9.005 / 0.480 | +4.190 | +0.026 |
+| only_ca10 | 2.982 / 0.255 | 7.023 / 0.526 | 14.063 / 0.787 | +7.040 | +0.261 |
+| only_ca15 | 4.789 / 0.331 | 10.287 / 0.643 | 17.362 / 0.927 | +7.075 | +0.284 |
+| only_ca20 | 7.071 / 0.410 | 13.200 / 0.754 | 17.703 / 0.995 | +4.504 | +0.241 |
+| vox_ca5 | 3.359 / 0.286 | 8.157 / 0.604 | 16.195 / 0.636 | +8.038 | +0.032 |
+| vox_ca10 | 4.676 / 0.349 | 10.244 / 0.641 | 21.882 / 0.821 | +11.638 | +0.180 |
+| vox_ca15 | 7.211 / 0.470 | 14.049 / 0.780 | 25.875 / 0.956 | +11.826 | +0.177 |
+| vox_ca20 | 9.604 / 0.601 | 17.683 / 0.891 | 25.042 / 0.995 | +7.359 | +0.105 |
 
-Far-Age is worse than Near-Age on 8/8 sets by EER and 8/8 sets by minDCF.
-Near→Far increases EER by 4.451–12.075 points and minDCF by 0.045–0.298.
-The ordering is fully consistent, although the degradation magnitude is not
-monotonic from CA5 to CA20.
+Far-Age is worse than Near-Age on 8/8 sets by EER and 8/8 sets by minDCF. Near→Far increases EER by 4.190–11.826 points and minDCF by 0.026–0.284. Consistent ordering: True.

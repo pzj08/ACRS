@@ -1,8 +1,9 @@
 {
+  "protocol": "cosine_without_mean_subtraction",
   "utterances": 151977,
   "self_intervention_max_absolute_difference": 0.0,
   "self_intervention_mean_absolute_difference": 0.0,
-  "self_intervention_minimum_cosine_similarity": 0.9999999403953552,
+  "self_intervention_minimum_cosine_similarity": 0.9999998211860657,
   "repeat_intervention_max_absolute_difference": 0.0,
   "repeat_intervention_mean_absolute_difference": 0.0,
   "correct_vs_existing_max_absolute_difference": 0.0,

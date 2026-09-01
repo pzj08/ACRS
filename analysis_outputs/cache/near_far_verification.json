@@ -1,4 +1,5 @@
 {
+  "protocol": "cosine_without_mean_subtraction",
   "targets": 151977,
   "near_donors_different_speaker": true,
   "far_donors_different_speaker": true,

@@ -14,6 +14,7 @@ from wespeaker.utils.score_metrics import (compute_c_norm, compute_eer,
 
 CONDITIONS = ("Correct", "Near-Age", "Shuffle-S3", "Shuffle-S4",
               "Shuffle-Both", "Far-Age")
+PROTOCOL = "cosine_without_mean_subtraction"
 
 
 def load_trials(paths):
@@ -39,7 +40,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-dir", required=True)
     parser.add_argument("--manifest", required=True)
-    parser.add_argument("--mean-vector", required=True)
     parser.add_argument("--correct-reference-scp", required=True)
     parser.add_argument("--embedding-dir", required=True)
     parser.add_argument("--skip-embedding-write", action="store_true")
@@ -96,11 +96,10 @@ def main():
         correct_reference_mean_sum += float(difference.sum())
         correct_reference_count += difference.size
 
-    mean_vector = np.load(args.mean_vector)
     arrays = {}
     for condition in CONDITIONS:
-        values = combined[condition].numpy() - mean_vector
-        arrays[condition] = normalize(values, copy=False)
+        values = combined[condition].numpy()
+        arrays[condition] = normalize(values, copy=True)
     datasets = load_trials(args.trials)
     score_dir = Path(args.score_dir)
     score_dir.mkdir(parents=True, exist_ok=True)
@@ -113,7 +112,8 @@ def main():
         labels = np.fromiter((row[2] == "target" for row in rows), dtype=bool)
         for condition in CONDITIONS:
             values = arrays[condition]
-            scores = np.einsum("ij,ij->i", values[left], values[right])
+            scores = np.matmul(values[left, None, :],
+                               values[right, :, None])[:, 0, 0]
             path = score_dir / f"{dataset}.{condition.lower().replace('-', '_')}.score"
             quantized = np.empty(len(scores), dtype=np.float64)
             with open(path, "w") as stream:
@@ -126,7 +126,8 @@ def main():
                 correct_by_dataset[dataset] = eer
             elif condition == "Near-Age":
                 near_by_dataset[dataset] = (eer, dcf)
-            result_rows.append({"Dataset": dataset, "Condition": condition,
+            result_rows.append({"Protocol": PROTOCOL,
+                                "Dataset": dataset, "Condition": condition,
                                 "EER": eer, "minDCF": dcf})
             print(dataset, condition, f"EER={eer:.3f}", f"minDCF={dcf:.3f}",
                   flush=True)
@@ -150,14 +151,15 @@ def main():
             row["Near_to_Far_minDCF_degradation"] = ""
     with open(args.results_csv, "w", newline="") as stream:
         fields = list(result_rows[0])
-        writer = csv.DictWriter(stream, fieldnames=fields)
+        writer = csv.DictWriter(stream, fieldnames=fields,
+                                lineterminator="\n")
         writer.writeheader()
         writer.writerows(result_rows)
 
     with open(args.results_md, "w") as stream:
         stream.write("# Counterfactual age-conditioning results\n\n")
-        stream.write("All values use the existing mean-subtracted cosine "
-                     "protocol. Cells report EER (%) / minDCF.\n\n")
+        stream.write("All values use cosine scoring without mean "
+                     "subtraction. Cells report EER (%) / minDCF.\n\n")
         stream.write("| Dataset | " + " | ".join(CONDITIONS) + " |\n")
         stream.write("|---" * (len(CONDITIONS) + 1) + "|\n")
         for dataset in datasets:
@@ -181,6 +183,7 @@ def main():
                    if row["Dataset"] == dataset and
                    row["Condition"] == "Far-Age")
         near_far_rows.append({
+            "Protocol": PROTOCOL,
             "Dataset": dataset,
             "Correct_EER": correct["EER"], "Correct_minDCF": correct["minDCF"],
             "Near_Age_EER": near["EER"], "Near_Age_minDCF": near["minDCF"],
@@ -194,13 +197,14 @@ def main():
             "Far_minDCF_worse_than_Near": far["minDCF"] > near["minDCF"],
         })
     with open(args.near_far_results_csv, "w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(near_far_rows[0]))
+        writer = csv.DictWriter(stream, fieldnames=list(near_far_rows[0]),
+                                lineterminator="\n")
         writer.writeheader()
         writer.writerows(near_far_rows)
     with open(args.near_far_results_md, "w") as stream:
         stream.write("# Near-Age versus Far-Age intervention\n\n")
-        stream.write("All values use the existing mean-subtracted cosine "
-                     "protocol. EER is reported in percent.\n\n")
+        stream.write("All values use cosine scoring without mean "
+                     "subtraction. EER is reported in percent.\n\n")
         stream.write("| Dataset | Correct EER/minDCF | Near-Age EER/minDCF | "
                      "Far-Age EER/minDCF | Near→Far ΔEER | Near→Far ΔminDCF |\n")
         stream.write("|---|---:|---:|---:|---:|---:|\n")
@@ -262,6 +266,7 @@ def main():
                          f"{summary['max']:.9f} |\n")
 
     verification = {
+        "protocol": PROTOCOL,
         "utterances": len(expected),
         "self_intervention_max_absolute_difference": self_max,
         "self_intervention_mean_absolute_difference": self_mean,

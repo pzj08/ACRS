@@ -1,6 +1,6 @@
 # Intervention sanity checks
 
-Self intervention (64 utterances): max absolute difference 0, mean absolute difference 0, minimum cosine similarity 0.99999994.
+Self intervention (128 utterances): max absolute difference 0, mean absolute difference 0, minimum cosine similarity 0.999999821.
 
 Repeated fixed-donor intervention: max absolute difference 0, mean absolute difference 0.
 

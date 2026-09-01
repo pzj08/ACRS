@@ -1,48 +1,15 @@
 protocol,dataset,system,EER,minDCF,full_absolute_EER_reduction,full_relative_EER_reduction_percent
-mean_subtracted,vox1_O_cleaned,Full ACRS,0.83,0.079,0.0,0.0
-mean_subtracted,vox1_E_cleaned,Full ACRS,1.004,0.113,0.0,0.0
-mean_subtracted,vox1_H_cleaned,Full ACRS,1.818,0.182,0.0,0.0
-mean_subtracted,only_ca5,Full ACRS,1.848,0.164,0.0,0.0
-mean_subtracted,only_ca10,Full ACRS,3.053,0.249,0.0,0.0
-mean_subtracted,only_ca15,Full ACRS,4.99,0.327,0.0,0.0
-mean_subtracted,only_ca20,Full ACRS,7.222,0.421,0.0,0.0
-mean_subtracted,vox_ca5,Full ACRS,3.353,0.291,0.0,0.0
-mean_subtracted,vox_ca10,Full ACRS,4.686,0.355,0.0,0.0
-mean_subtracted,vox_ca15,Full ACRS,7.285,0.466,0.0,0.0
-mean_subtracted,vox_ca20,Full ACRS,9.858,0.596,0.0,0.0
-mean_subtracted,vox1_O_cleaned,no_age_loss,0.819,0.089,-0.01100000000000001,-1.3431013431013443
-mean_subtracted,vox1_E_cleaned,no_age_loss,1.016,0.114,0.01200000000000001,1.1811023622047254
-mean_subtracted,vox1_H_cleaned,no_age_loss,1.956,0.197,0.1379999999999999,7.055214723926375
-mean_subtracted,only_ca5,no_age_loss,1.885,0.17,0.03699999999999992,1.962864721485407
-mean_subtracted,only_ca10,no_age_loss,3.283,0.255,0.22999999999999998,7.005787389582699
-mean_subtracted,only_ca15,no_age_loss,5.606,0.355,0.6159999999999997,10.988226899750261
-mean_subtracted,only_ca20,no_age_loss,8.255,0.467,1.0330000000000004,12.513628104179288
-mean_subtracted,vox_ca5,no_age_loss,3.498,0.293,0.14500000000000002,4.145225843339051
-mean_subtracted,vox_ca10,no_age_loss,4.96,0.353,0.274,5.524193548387097
-mean_subtracted,vox_ca15,no_age_loss,7.86,0.478,0.5750000000000002,7.315521628498729
-mean_subtracted,vox_ca20,no_age_loss,10.758,0.638,0.8999999999999986,8.36586726157277
-mean_subtracted,vox1_O_cleaned,no_age_conditioning,0.989,0.088,0.15900000000000003,16.076845298281093
-mean_subtracted,vox1_E_cleaned,no_age_conditioning,1.115,0.121,0.11099999999999999,9.955156950672643
-mean_subtracted,vox1_H_cleaned,no_age_conditioning,2.012,0.198,0.19399999999999995,9.64214711729622
-mean_subtracted,only_ca5,no_age_conditioning,2.007,0.176,0.15900000000000003,7.922272047832586
-mean_subtracted,only_ca10,no_age_conditioning,3.412,0.269,0.359,10.52168815943728
-mean_subtracted,only_ca15,no_age_conditioning,5.54,0.347,0.5499999999999998,9.927797833935015
-mean_subtracted,only_ca20,no_age_conditioning,7.693,0.451,0.4709999999999992,6.122448979591827
-mean_subtracted,vox_ca5,no_age_conditioning,3.579,0.297,0.22599999999999998,6.314613020396758
-mean_subtracted,vox_ca10,no_age_conditioning,5.104,0.363,0.41800000000000015,8.189655172413795
-mean_subtracted,vox_ca15,no_age_conditioning,8.171,0.459,0.8859999999999992,10.843226043323941
-mean_subtracted,vox_ca20,no_age_conditioning,10.504,0.631,0.645999999999999,6.150038080731141
-mean_subtracted,vox1_O_cleaned,random_gate_init,1.159,0.131,0.32900000000000007,28.386540120793793
-mean_subtracted,vox1_E_cleaned,random_gate_init,1.245,0.144,0.2410000000000001,19.35742971887551
-mean_subtracted,vox1_H_cleaned,random_gate_init,2.298,0.231,0.48,20.887728459530027
-mean_subtracted,only_ca5,random_gate_init,2.162,0.21,0.31399999999999983,14.523589269195183
-mean_subtracted,only_ca10,random_gate_init,3.623,0.298,0.5700000000000003,15.732818106541547
-mean_subtracted,only_ca15,random_gate_init,6.131,0.392,1.141,18.610340890556188
-mean_subtracted,only_ca20,random_gate_init,8.867,0.478,1.6450000000000005,18.55193413781437
-mean_subtracted,vox_ca5,random_gate_init,3.936,0.345,0.5829999999999997,14.811991869918693
-mean_subtracted,vox_ca10,random_gate_init,5.504,0.412,0.8179999999999996,14.861918604651155
-mean_subtracted,vox_ca15,random_gate_init,8.753,0.53,1.468,16.771392665371874
-mean_subtracted,vox_ca20,random_gate_init,11.256,0.702,1.3979999999999997,12.420042643923237
+no_mean_subtraction,vox1_O_cleaned,ResNet34 baseline,1.026,0.108,0.21200000000000008,20.66276803118909
+no_mean_subtraction,vox1_E_cleaned,ResNet34 baseline,1.133,0.13,0.12400000000000011,10.944395410414838
+no_mean_subtraction,vox1_H_cleaned,ResNet34 baseline,2.068,0.198,0.262,12.669245647969053
+no_mean_subtraction,only_ca5,ResNet34 baseline,2.061,0.186,0.19199999999999995,9.315866084425034
+no_mean_subtraction,only_ca10,ResNet34 baseline,3.306,0.273,0.32399999999999984,9.800362976406529
+no_mean_subtraction,only_ca15,ResNet34 baseline,5.159,0.389,0.3700000000000001,7.171932545066876
+no_mean_subtraction,only_ca20,ResNet34 baseline,7.232,0.462,0.16100000000000048,2.2262168141592986
+no_mean_subtraction,vox_ca5,ResNet34 baseline,3.788,0.3,0.4289999999999998,11.32523759239704
+no_mean_subtraction,vox_ca10,ResNet34 baseline,5.295,0.382,0.6189999999999998,11.690273843248344
+no_mean_subtraction,vox_ca15,ResNet34 baseline,8.123,0.508,0.911999999999999,11.227379047150057
+no_mean_subtraction,vox_ca20,ResNet34 baseline,10.97,0.674,1.3660000000000014,12.45214220601642
 no_mean_subtraction,vox1_O_cleaned,Full ACRS,0.814,0.082,0.0,0.0
 no_mean_subtraction,vox1_E_cleaned,Full ACRS,1.009,0.112,0.0,0.0
 no_mean_subtraction,vox1_H_cleaned,Full ACRS,1.806,0.178,0.0,0.0

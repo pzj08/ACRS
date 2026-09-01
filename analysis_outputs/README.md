@@ -11,7 +11,7 @@ recorded in `cache/cache_verification.json`). The source configuration is
 
 Evaluation reuses the recipe's VoxCeleb shard reader, full-utterance feature
 extraction (`batch_size=1`, `whole_utt=True`, dither disabled), CMVN, cosine
-scoring, Vox2-train mean subtraction, and WeSpeaker EER/minDCF definitions
+scoring without mean subtraction, and WeSpeaker EER/minDCF definitions
 (`p_target=0.01`, `c_miss=1`, `c_fa=1`). A direct-wav shortcut was rejected
 because it did not reproduce the archived extraction exactly. The cache is
 checked against the existing full-system `xvector.scp` before analysis.
@@ -116,8 +116,9 @@ multi-gigabyte variable-shape activation store; the maps are retained only
 during each forward pass when exact residual candidates and self-intervention
 checks are computed.
 
-The public repository contains the analysis scripts, aggregate CSV results,
-figures, reports, and compact verification records. Large utterance-level
+The public repository reports all verification results without mean
+subtraction. It contains the analysis scripts, aggregate CSV results, figures,
+reports, and compact verification records. Large utterance-level
 caches, the raw positive-pair table, the complete donor mapping, and the raw
 pair-level gate-distance table are reproducible generated artifacts and are
 excluded from version control.
@@ -137,15 +138,15 @@ The main empirical result is stage-specific. Stage-4 gate distance increases
 approximately monotonically with true age gap (ρ=0.1484), while Stage 3 is
 non-monotonic and effectively flat (ρ=0.0100). Actual Stage-4 suppression has a
 stronger age-gap relation (pair-mean ρ=0.3260). Wrong residual conditions raise
-EER in every test: joint-stage shuffling adds 4.39–7.40 EER points and Far-Age
-adds 7.36–18.66 points. Stage-3 shuffling is more damaging to verification than
+EER in every test: joint-stage shuffling adds 4.47–7.42 EER points and Far-Age
+adds 7.14–18.66 points. Stage-3 shuffling is more damaging to verification than
 Stage-4 shuffling, although Stage 4 is more age-ordered. Intervention
 degradation is not monotonic from CA5 to CA20.
 
 The Near-Age extension uses different-speaker donors with a mean continuous
 age gap of 0.00174 years, versus 46.13 years for Far-Age. Far-Age is worse than
 Near-Age on all eight CA sets by both EER and minDCF. Near→Far adds
-4.451–12.075 EER points and 0.045–0.298 minDCF. Near-Age is still worse than
+4.190–11.826 EER points and 0.026–0.284 minDCF. Near-Age is still worse than
 Correct on every set, so donor gates retain target/utterance-dependent
 variation beyond scalar continuous age.
 
