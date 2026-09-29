@@ -15,3 +15,7 @@ $$
 where $r(e)$ increases linearly to one over the first two epochs. The archived configuration records `lambda_consistency=0.02`, `lambda_smooth=0.0001`, and `lambda_path=0`. Counterfactual training is disabled, so the consistency and path terms are zero; the ACRS loss implementation does not add a smoothness term. These fields are retained in the YAML to match the saved epoch-150 experiment configuration.
 
 Verification results in this repository use full-utterance embeddings and cosine scoring without mean subtraction.
+
+The matched component-ablation recipes are documented in
+[ABLATIONS.md](ABLATIONS.md). They use configuration switches in the same ACRS
+implementation, so no experiment requires a copied model definition.

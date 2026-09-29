@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from typing import Any, Callable, Dict, Mapping, Optional, Tuple
 
 import torch
@@ -17,6 +18,9 @@ def _merged_config(config: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
         "age_bins": [18, 25, 35, 45, 55, 65],
         "ignore_age_index": -1,
         "num_posterior_bins": 4,
+        "enable_acrs_s3": True,
+        "enable_acrs_s4": True,
+        "ablation": {"mode": "none"},
         "losses": {
             "lambda_age": 0.05,
             "lambda_consistency": 0.02,
@@ -58,8 +62,10 @@ def _make_layer(in_channels: int, channels: int, blocks: int,
 
 
 class AgeConditionedResidualBlock(nn.Module):
-    def __init__(self, channels: int):
+    def __init__(self, channels: int, *, gate_off: bool = False,
+                 gate_init: str = "default"):
         super().__init__()
+        self.gate_off = gate_off
         self.residual = nn.Conv2d(channels, channels, kernel_size=1)
         self.age_projection = nn.Sequential(
             nn.Linear(2 * channels, channels),
@@ -67,20 +73,34 @@ class AgeConditionedResidualBlock(nn.Module):
             nn.Linear(channels, channels),
         )
         self.gate = nn.Linear(channels, channels)
-        nn.init.constant_(self.gate.bias, -2.0)
+        if gate_init == "kaiming":
+            nn.init.kaiming_normal_(self.gate.weight, a=math.sqrt(5.0))
+            nn.init.zeros_(self.gate.bias)
+        elif gate_init == "default":
+            nn.init.constant_(self.gate.bias, -2.0)
+        else:
+            raise ValueError(f"unsupported residual gate init: {gate_init}")
 
     def forward(self, identity: torch.Tensor,
                 age: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         age_code = self.age_projection(_statistics(age))
         gate = torch.sigmoid(self.gate(age_code))
         residual = self.residual(identity)
+        if self.gate_off:
+            # Preserve an identical parameter/checkpoint structure and keep
+            # every parameter in the DDP graph while making this path an
+            # exact identity operation.
+            disabled = residual + gate[:, :, None, None]
+            return identity + 0.0 * disabled, torch.zeros_like(gate)
         output = identity - gate[:, :, None, None] * residual
         return output, gate
 
 
 class AgeConditionedFusionGate(nn.Module):
-    def __init__(self, channels: int, low_rank: int = 32):
+    def __init__(self, channels: int, low_rank: int = 32, *,
+                 gate_off: bool = False):
         super().__init__()
+        self.gate_off = gate_off
         self.age_projection = nn.Conv2d(
             channels, low_rank, kernel_size=1, bias=False)
         self.gate = nn.Conv2d(channels + low_rank, channels, kernel_size=1)
@@ -89,7 +109,10 @@ class AgeConditionedFusionGate(nn.Module):
                 age: torch.Tensor) -> torch.Tensor:
         age = self.age_projection(age)
         gate = torch.sigmoid(self.gate(torch.cat([identity, age], dim=1)))
-        return identity * gate
+        conditioned = identity * gate
+        if self.gate_off:
+            return identity + 0.0 * conditioned
+        return conditioned
 
 
 class AttentiveSpatiotemporalStatisticsPooling(nn.Module):
@@ -145,6 +168,44 @@ class ACRS(nn.Module):
         self.config = _merged_config(acrs_args)
         self.num_age_groups = int(self.config["num_age_groups"])
         self.ignore_age_index = int(self.config["ignore_age_index"])
+        self.enable_acrs_s3 = bool(self.config["enable_acrs_s3"])
+        self.enable_acrs_s4 = bool(self.config["enable_acrs_s4"])
+        self.enabled_acrs_stages = tuple(
+            stage for stage, enabled in (
+                ("stage3", self.enable_acrs_s3),
+                ("stage4", self.enable_acrs_s4),
+            ) if enabled)
+
+        ablation = dict(self.config.get("ablation", {}) or {})
+        aliases = {
+            "no_age_gate": "no_age_conditioning",
+            "no_quotient": "no_residual_suppression",
+            "random_init": "random_gate_init",
+        }
+        self.ablation_mode = aliases.get(
+            str(ablation.get("mode", "none")),
+            str(ablation.get("mode", "none")),
+        )
+        supported_ablations = {
+            "none",
+            "no_age_conditioning",
+            "no_residual_suppression",
+            "no_fusion_gate",
+            "random_gate_init",
+        }
+        if self.ablation_mode not in supported_ablations:
+            raise ValueError(
+                f"unsupported ACRS ablation mode: {self.ablation_mode}")
+        residual_gate_off = self.ablation_mode in {
+            "no_age_conditioning", "no_residual_suppression"
+        }
+        fusion_gate_off = self.ablation_mode in {
+            "no_age_conditioning", "no_fusion_gate"
+        }
+        residual_gate_init = (
+            "kaiming" if self.ablation_mode == "random_gate_init"
+            else "default"
+        )
 
         losses = self.config["losses"]
         self.age_loss_weight = float(losses["lambda_age"])
@@ -170,10 +231,13 @@ class ACRS(nn.Module):
         self.age_head = AgeHead(256, int(self.config["num_posterior_bins"]))
 
         self.identity_layer3 = _make_layer(64, 128, 6, 2)
-        self.residual3 = AgeConditionedResidualBlock(128)
+        self.residual3 = AgeConditionedResidualBlock(
+            128, gate_off=residual_gate_off, gate_init=residual_gate_init)
         self.identity_layer4 = _make_layer(128, 256, 3, 2)
-        self.residual4 = AgeConditionedResidualBlock(256)
-        self.fusion = AgeConditionedFusionGate(256)
+        self.residual4 = AgeConditionedResidualBlock(
+            256, gate_off=residual_gate_off, gate_init=residual_gate_init)
+        self.fusion = AgeConditionedFusionGate(
+            256, gate_off=fusion_gate_off)
         self.pooling = AttentiveSpatiotemporalStatisticsPooling(
             256, embed_dim)
         self.embedding_age_readout = nn.Sequential(
@@ -196,9 +260,21 @@ class ACRS(nn.Module):
         self, shared: torch.Tensor, age3: torch.Tensor, age4: torch.Tensor
     ) -> Tuple[torch.Tensor, ...]:
         identity3 = self.identity_layer3(shared)
-        identity3, gate3 = self.residual3(identity3, age3)
+        identity3_suppressed, gate3_raw = self.residual3(identity3, age3)
+        if self.enable_acrs_s3:
+            identity3, gate3 = identity3_suppressed, gate3_raw
+        else:
+            identity3 = identity3 + 0.0 * (
+                identity3_suppressed - identity3)
+            gate3 = torch.zeros_like(gate3_raw)
         identity4 = self.identity_layer4(identity3)
-        identity4, gate4 = self.residual4(identity4, age4)
+        identity4_suppressed, gate4_raw = self.residual4(identity4, age4)
+        if self.enable_acrs_s4:
+            identity4, gate4 = identity4_suppressed, gate4_raw
+        else:
+            identity4 = identity4 + 0.0 * (
+                identity4_suppressed - identity4)
+            gate4 = torch.zeros_like(gate4_raw)
         identity4 = self.fusion(identity4, age4)
         embedding = self.pooling(identity4)
         return identity3, gate3, identity4, gate4, embedding
